@@ -4,6 +4,10 @@ import {
   PropertyPaneTextField,
   PropertyPaneSlider,
 } from '@microsoft/sp-property-pane';
+/**
+ * PropertyPaneCustomField is discontinued from spfx v1.19.0
+ */
+//import { PropertyPaneCustomField } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import type { IReadonlyTheme } from '@microsoft/sp-component-base';
 // import { escape } from '@microsoft/sp-lodash-subset';
@@ -21,8 +25,10 @@ import {
 
 export interface IHelloWorldWebPartProps {
   description: string;
-  myContinent: string;
+  myContinent1: string;
+  myContinent2: string;
   numContinentsVisited: number;
+  customField?: string;
 }
 
 export interface IHelloWorldWebPartState {
@@ -79,7 +85,8 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
         <div>${this._environmentMessage}</div>
         <h3>WebPart Property Pane Values</h3>
         <div>Web part property value description: <strong>${escape(this.properties.description)}</strong></div>
-        <div>Continent where I reside: <strong>${escape(this.properties.myContinent)}</strong></div>
+        <div>Continent 1 where I reside: <strong>${escape(this.properties.myContinent1)}</strong></div>
+        <div>Continent 2 where I reside: <strong>${escape(this.properties.myContinent2)}</strong></div>
         <div>Number of continents I've visited: <strong>${this.properties.numContinentsVisited}</strong></div>
         <h3>SharePoint Details</h3>
         <div>Site title: <strong>${escape(siteTitle)}</strong></div>
@@ -164,15 +171,21 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
                 PropertyPaneTextField('description', {
                   label: strings.DescriptionFieldLabel
                 }),
-                // PropertyPaneTextField('myContinent', {
-                //   label: 'Continent where I currently reside',
-                //   onGetErrorMessage: this.validateContinents.bind(this)
-                // }),
-                new PropertyPaneContinentSelector('myContinent', <IPropertyPaneContinentSelectorProps>{
+                PropertyPaneTextField('myContinent1', {
+                  label: 'Continent 1 where I currently reside',
+                  onGetErrorMessage: this._validateContinents.bind(this)
+                }),
+                /**
+                 * PropertyPaneCustomField is discontinued from spfx v1.19.0
+                 */
+                // PropertyPaneCustomField('customField', { 
+                //   onRender: this._customFieldRender.bind(this)
+                //  } ),
+                new PropertyPaneContinentSelector('myContinent2', <IPropertyPaneContinentSelectorProps>{
                   key: 'myContinentKey',
-                  label: 'Continent where I currently reside',
+                  label: 'Continent 2 where I currently reside',
                   disabled: false,
-                  selectedKey: this.properties.myContinent,
+                  selectedKey: this.properties.myContinent2,
                   onPropertyChange: this.onContinentSelectionChange.bind(this),
                 }),
                 PropertyPaneSlider('numContinentsVisited', {
@@ -187,14 +200,17 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
     };
   }
 
-  // private validateContinents(textboxValue: string): string {
-  //   const validContinentOptions: string[] = ['africa', 'antarctica', 'asia', 'australia', 'europe', 'north america', 'south america'];
-  //   const inputToValidate: string = textboxValue.toLowerCase();
-
-  //   return (validContinentOptions.indexOf(inputToValidate) === -1)
-  //     ? 'Invalid continent entry; valid options are "Africa", "Antarctica", "Asia", "Australia", "Europe", "North America", and "South America"'
-  //     : '';
+  // private _customFieldRender(elem: HTMLElement): void {
+  //   elem.innerHTML = '<div><h1>This is a custom field.</h1></div>';
   // }
+
+  private _validateContinents(textboxValue: string): string {
+    const validContinentOptions: string[] = ['africa', 'antarctica', 'asia', 'australia', 'europe', 'north america', 'south america'];
+    const inputToValidate: string = textboxValue.toLowerCase();
+    return (validContinentOptions.indexOf(inputToValidate) === -1)
+      ? 'Invalid continent entry; valid options are "Africa", "Antarctica", "Asia", "Australia", "Europe", "North America", and "South America"'
+      : '';
+  }
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
   private onContinentSelectionChange(propertyPath: string, newValue: any): void {

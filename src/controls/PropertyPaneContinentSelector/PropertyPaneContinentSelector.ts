@@ -10,7 +10,7 @@ import ContinentSelector from './components/ContinentSelector';
 import {
     IPropertyPaneContinentSelectorProps,
     IPropertyPaneContinentSelectorInternalProps,
-} from './';
+} from '.';
 
 export class PropertyPaneContinentSelector implements IPropertyPaneField<IPropertyPaneContinentSelectorProps> {
     public type: PropertyPaneFieldType = PropertyPaneFieldType.Custom;

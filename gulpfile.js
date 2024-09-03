@@ -14,3 +14,11 @@ build.rig.getTasks = function () {
 };
 
 build.initialize(require('gulp'));
+
+// build.configureWebpack.mergeConfig({
+//   additionalConfiguration: (generatedConfiguration) => {
+//     generatedConfiguration.externals = generatedConfiguration.externals.filter(e => !["react", "react-dom"].includes(e))
+
+//     return generatedConfiguration;
+//   }
+// });
