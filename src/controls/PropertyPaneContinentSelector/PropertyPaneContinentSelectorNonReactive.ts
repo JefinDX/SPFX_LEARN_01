@@ -4,15 +4,15 @@ import {
     IPropertyPaneField,
     PropertyPaneFieldType
 } from '@microsoft/sp-property-pane';
-import { IDropdownOption } from '@fluentui/react';
+// import { IDropdownOption } from '@fluentui/react';
 import { IContinentSelectorProps } from './components/IContinentSelectorProps';
-import ContinentSelector from './components/ContinentSelector';
+import ContinentSelectorNonReactive from './components/ContinentSelectorNonReactive';
 import {
     IPropertyPaneContinentSelectorProps,
     IPropertyPaneContinentSelectorInternalProps,
 } from '.';
 
-export class PropertyPaneContinentSelector implements IPropertyPaneField<IPropertyPaneContinentSelectorProps> {
+export class PropertyPaneContinentSelectorNonReactive implements IPropertyPaneField<IPropertyPaneContinentSelectorProps> {
     public type: PropertyPaneFieldType = PropertyPaneFieldType.Custom;
     public properties: IPropertyPaneContinentSelectorInternalProps;
     private element: HTMLElement;
@@ -36,14 +36,17 @@ export class PropertyPaneContinentSelector implements IPropertyPaneField<IProper
         }
     }
 
-    private onRender(element: HTMLElement): void {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    private onRender(element: HTMLElement, context?: any, changeCallback?: (targetProperty?: string, newValue?: any) => void): void {
+        /* eslint-enable @typescript-eslint/no-explicit-any */
         if (!this.element) {
             this.element = element;
         }
 
-        const reactElement: React.ReactElement<IContinentSelectorProps> = React.createElement(ContinentSelector, <IContinentSelectorProps>{
+        const reactElement: React.ReactElement<IContinentSelectorProps> = React.createElement(ContinentSelectorNonReactive, <IContinentSelectorProps>{
             label: this.properties.label,
-            onChangedReactive: this.onChanged.bind(this),
+            // onChangedReactive: this.onChanged.bind(this),
+            onChangedNonReactive: changeCallback,
             selectedKey: this.properties.selectedKey,
             disabled: this.properties.disabled,
             stateKey: new Date().toString() // hack to allow for externally triggered re-rendering
@@ -55,7 +58,7 @@ export class PropertyPaneContinentSelector implements IPropertyPaneField<IProper
         ReactDom.unmountComponentAtNode(element);
     }
 
-    private onChanged(option: IDropdownOption, index?: number): void {
-        this.properties.onPropertyChange(this.targetProperty, option.key);
-    }
+    // private onChanged(option: IDropdownOption, index?: number): void {
+    //     this.properties.onPropertyChange(this.targetProperty, option.key);
+    // }
 }

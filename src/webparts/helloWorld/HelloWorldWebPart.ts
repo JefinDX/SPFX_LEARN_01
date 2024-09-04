@@ -10,7 +10,6 @@ import {
 //import { PropertyPaneCustomField } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 import type { IReadonlyTheme } from '@microsoft/sp-component-base';
-// import { escape } from '@microsoft/sp-lodash-subset';
 import { escape, update } from '@microsoft/sp-lodash-subset';
 import { DisplayMode, EnvironmentType, Environment, Log } from '@microsoft/sp-core-library';
 
@@ -21,12 +20,13 @@ import {
   PropertyPaneContinentSelector,
   IPropertyPaneContinentSelectorProps
 } from '../../controls/PropertyPaneContinentSelector';
-
+import { PropertyPaneContinentSelectorNonReactive } from '../../controls/PropertyPaneContinentSelector/PropertyPaneContinentSelectorNonReactive';
 
 export interface IHelloWorldWebPartProps {
   description: string;
   myContinent1: string;
   myContinent2: string;
+  myContinent3: string;
   numContinentsVisited: number;
   customField?: string;
 }
@@ -42,7 +42,6 @@ export interface IHelloPropertyPaneWebPartProps {
 }
 
 export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorldWebPartProps> {
-
   private _isDarkTheme: boolean = false;
   private _environmentMessage: string = '';
 
@@ -57,6 +56,9 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
       this._renderWebpartDOM();
     }, 2000)
 
+    /**
+     * SPFx logging example
+     */
     Log.info('HelloWorld', 'message', this.context.serviceScope);
     Log.warn('HelloWorld', 'WARNING message', this.context.serviceScope);
     Log.error('HelloWorld', new Error('Error message'), this.context.serviceScope);
@@ -87,6 +89,7 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
         <div>Web part property value description: <strong>${escape(this.properties.description)}</strong></div>
         <div>Continent 1 where I reside: <strong>${escape(this.properties.myContinent1)}</strong></div>
         <div>Continent 2 where I reside: <strong>${escape(this.properties.myContinent2)}</strong></div>
+        <div>Continent 3 where I reside: <strong>${escape(this.properties.myContinent3)}</strong></div>
         <div>Number of continents I've visited: <strong>${this.properties.numContinentsVisited}</strong></div>
         <h3>SharePoint Details</h3>
         <div>Site title: <strong>${escape(siteTitle)}</strong></div>
@@ -182,8 +185,15 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
                 //   onRender: this._customFieldRender.bind(this)
                 //  } ),
                 new PropertyPaneContinentSelector('myContinent2', <IPropertyPaneContinentSelectorProps>{
-                  key: 'myContinentKey',
+                  key: 'myContinent2Key',
                   label: 'Continent 2 where I currently reside',
+                  disabled: false,
+                  selectedKey: this.properties.myContinent2,
+                  onPropertyChange: this.onContinentSelectionChange.bind(this),
+                }),
+                new PropertyPaneContinentSelectorNonReactive('myContinent3', <IPropertyPaneContinentSelectorProps>{
+                  key: 'myContinent3Key',
+                  label: 'Continent 3 where I currently reside',
                   disabled: false,
                   selectedKey: this.properties.myContinent2,
                   onPropertyChange: this.onContinentSelectionChange.bind(this),
@@ -200,6 +210,9 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
     };
   }
 
+  /**
+   * PropertyPaneCustomField is discontinued from spfx v1.19.0
+   */
   // private _customFieldRender(elem: HTMLElement): void {
   //   elem.innerHTML = '<div><h1>This is a custom field.</h1></div>';
   // }

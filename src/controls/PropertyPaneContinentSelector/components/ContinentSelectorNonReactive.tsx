@@ -56,8 +56,8 @@ export default class ContinentSelector extends React.Component<IContinentSelecto
             prevState.options = options;
             return prevState;
         });
-        if (this.props.onChangedReactive) {
-            this.props.onChangedReactive(option, index);
+        if (this.props.onChangedNonReactive) {
+            this.props.onChangedNonReactive('myContinent3', option.key);
         }
     }
 
