@@ -18,9 +18,9 @@ import * as strings from 'HelloWorldWebPartStrings';
 
 import {
   PropertyPaneContinentSelector,
+  PropertyPaneContinentSelectorNonReactive,
   IPropertyPaneContinentSelectorProps
 } from '../../controls/PropertyPaneContinentSelector';
-import { PropertyPaneContinentSelectorNonReactive } from '../../controls/PropertyPaneContinentSelector/PropertyPaneContinentSelectorNonReactive';
 
 export interface IHelloWorldWebPartProps {
   description: string;
