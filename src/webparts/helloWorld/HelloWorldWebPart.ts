@@ -13,6 +13,20 @@ import type { IReadonlyTheme } from '@microsoft/sp-component-base';
 import { escape, update } from '@microsoft/sp-lodash-subset';
 import { DisplayMode, EnvironmentType, Environment, Log } from '@microsoft/sp-core-library';
 
+import {
+  PropertyFieldListPicker,
+  PropertyFieldListPickerOrderBy
+} from '@pnp/spfx-property-controls/lib/PropertyFieldListPicker';
+import {
+  IPropertyFieldGroupOrPerson,
+  PropertyFieldPeoplePicker,
+  PrincipalType
+} from '@pnp/spfx-property-controls/lib/PropertyFieldPeoplePicker';
+import {
+  PropertyFieldCollectionData,
+  CustomCollectionFieldType
+} from '@pnp/spfx-property-controls/lib/PropertyFieldCollectionData';
+
 import styles from './HelloWorldWebPart.module.scss';
 import * as strings from 'HelloWorldWebPartStrings';
 
@@ -29,16 +43,13 @@ export interface IHelloWorldWebPartProps {
   myContinent3: string;
   numContinentsVisited: number;
   customField?: string;
+  lists: string;
+  people: IPropertyFieldGroupOrPerson[];
+  expansionOptions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export interface IHelloWorldWebPartState {
   descriptionState: string;
-}
-
-export interface IHelloPropertyPaneWebPartProps {
-  description: string;
-  myContinent: string;
-  numContinentsVisited: number;
 }
 
 export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorldWebPartProps> {
@@ -86,11 +97,21 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
         <h2>Well done, ${escape(this.context.pageContext.user.displayName)}!</h2>
         <div>${this._environmentMessage}</div>
         <h3>WebPart Property Pane Values</h3>
+
         <div>Web part property value description: <strong>${escape(this.properties.description)}</strong></div>
-        <div>Continent 1 where I reside: <strong>${escape(this.properties.myContinent1)}</strong></div>
-        <div>Continent 2 where I reside: <strong>${escape(this.properties.myContinent2)}</strong></div>
-        <div>Continent 3 where I reside: <strong>${escape(this.properties.myContinent3)}</strong></div>
-        <div>Number of continents I've visited: <strong>${this.properties.numContinentsVisited}</strong></div>
+        ${this.properties.myContinent1 ?
+        `<div>Continent 1 where I reside: <strong>${escape(this.properties.myContinent1)}</strong></div>` : ''}
+        ${this.properties.myContinent2 ?
+        `<div>Continent 2 where I reside: <strong>${escape(this.properties.myContinent2)}</strong></div>` : ''}
+          ${this.properties.myContinent3 ?
+        `<div>Continent 3 where I reside: <strong>${escape(this.properties.myContinent3)}</strong></div>` : ''}
+            ${this.properties.numContinentsVisited ?
+        `<div>Number of continents I've visited: <strong>${this.properties.numContinentsVisited}</strong></div>` : ''}
+
+        <div>List selected: <strong>${this.properties.lists}</strong></div>
+        <div class="selectedPeople"></div>
+        <div class="expansionOptions"></div>
+
         <h3>SharePoint Details</h3>
         <div>Site title: <strong>${escape(siteTitle)}</strong></div>
         <div>Page mode: <strong>${escape(pageMode)}</strong></div>
@@ -109,6 +130,24 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
           this._renderWebpartDOM();
         }, 5000);
       });
+
+    if (this.properties.people && this.properties.people.length > 0) {
+      let peopleList: string = '';
+      this.properties.people.forEach((person) => {
+        peopleList = peopleList + `<li>${person.fullName} (${person.email})</li>`;
+      });
+      this.domElement.getElementsByClassName('selectedPeople')[0].innerHTML = `<ul>${peopleList}</ul>`;
+    }
+
+    if (this.properties.expansionOptions && this.properties.expansionOptions.length > 0) {
+      let expansionOptions: string = '';
+      this.properties.expansionOptions.forEach((option) => {
+        expansionOptions = expansionOptions + `<li>${option.Region}: ${option.Comment} </li>`;
+      });
+      if (expansionOptions.length > 0) {
+        this.domElement.getElementsByClassName('expansionOptions')[0].innerHTML = `<ul>${expansionOptions}</ul>`;
+      }
+    }
   }
 
   private _getEnvironmentMessage(): Promise<string> {
@@ -165,7 +204,8 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
       pages: [
         {
           header: {
-            description: strings.PropertyPaneDescription
+            // description: strings.PropertyPaneDescription
+            description: 'Built-in and Custom Property Pane Controls'
           },
           groups: [
             {
@@ -201,6 +241,68 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
                 PropertyPaneSlider('numContinentsVisited', {
                   label: 'Number of continents I\'ve visited',
                   min: 1, max: 7, showValue: true,
+                })
+              ]
+            }
+          ]
+        },
+        {
+          header: {
+            description: 'PnP Control Fields'
+          },
+          groups: [
+            {
+              groupName: strings.BasicGroupName,
+              groupFields: [
+                PropertyFieldListPicker('lists', {
+                  label: 'Select a list',
+                  selectedList: this.properties.lists,
+                  includeHidden: false,
+                  orderBy: PropertyFieldListPickerOrderBy.Title,
+                  disabled: false,
+                  onPropertyChange: this.onPropertyPaneFieldChanged.bind(this),
+                  properties: this.properties,
+                  context: this.context,
+                  onGetErrorMessage: undefined,
+                  deferredValidationTime: 0,
+                  key: 'listPickerFieldId'
+                }),
+                PropertyFieldPeoplePicker('people', {
+                  label: 'People Picker',
+                  initialData: this.properties.people,
+                  allowDuplicate: false,
+                  principalType: [PrincipalType.Users, PrincipalType.SharePoint, PrincipalType.Security],
+                  onPropertyChange: this.onPropertyPaneFieldChanged,
+                  context: this.context as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+                  properties: this.properties,
+                  deferredValidationTime: 0,
+                  key: 'peopleFieldId'
+                }),
+                PropertyFieldCollectionData('expansionOptions', {
+                  key: 'collectionData',
+                  label: 'Possible expansion options',
+                  panelHeader: 'Possible expansion options',
+                  manageBtnLabel: 'Manage expansion options',
+                  value: this.properties.expansionOptions,
+                  fields: [
+                    {
+                      id: 'Region',
+                      title: 'Region',
+                      required: true,
+                      type: CustomCollectionFieldType.dropdown,
+                      options: [
+                        { key: 'East', text: 'East' },
+                        { key: 'West', text: 'West' },
+                        { key: 'North', text: 'North' },
+                        { key: 'South', text: 'South' }
+                      ]
+                    },
+                    {
+                      id: 'Comment',
+                      title: 'Comment',
+                      type: CustomCollectionFieldType.string
+                    }
+                  ]
                 })
               ]
             }
